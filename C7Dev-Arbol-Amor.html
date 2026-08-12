@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Árbol de Amor Animado — C7Dev</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Crimson+Pro:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0f0a;
+  --gold: #c9a84c;
+  --gold-light: #f0d070;
+  --emerald: #2d7a4f;
+  --emerald-light: #4daf78;
+  --cream: #f5ede0;
+  --dark-card: rgba(12, 20, 12, 0.94);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background: radial-gradient(ellipse at center, #0f1e0f 0%, #060c06 100%);
+  font-size: 16px;
+}
+
+#fireworks-canvas {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.tree-container {
+  width: 520px !important;
+  height: 520px !important;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+}
+
+.tree-container svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  filter: drop-shadow(0 0 12px rgba(77, 175, 120, 0.4));
+}
+
+.tree-container svg.move-and-scale {
+  transition: transform 1.2s cubic-bezier(.77,0,.18,1);
+  transform: translateX(200px) scale(1.35);
+}
+
+.dedication-text {
+  position: absolute;
+  top: 50%;
+  left: 3%;
+  transform: translateY(-50%);
+  min-width: 300px;
+  max-width: 560px;
+  width: 55rem;
+  font-size: 1.35rem;
+  color: var(--cream);
+  font-family: 'Crimson Pro', serif;
+  font-style: italic;
+  line-height: 1.9;
+  white-space: pre-line;
+  z-index: 3;
+  opacity: 0;
+  pointer-events: none;
+  max-height: 90vh;
+  padding: 1.4em 1.8em;
+  background: rgba(10, 15, 10, 0.88);
+  border: 1px solid rgba(201, 168, 76, 0.25);
+  border-radius: 14px;
+  box-shadow: 0 0 30px rgba(45, 122, 79, 0.2), 0 2px 20px rgba(0,0,0,0.5);
+  backdrop-filter: blur(10px);
+}
+
+.dedication-text.typing {
+  opacity: 1;
+  animation: fadeInText 0.8s;
+}
+
+@keyframes fadeInText {
+  from { opacity: 0; transform: translateY(-50%) translateX(-10px); }
+  to   { opacity: 1; transform: translateY(-50%) translateX(0); }
+}
+
+.signature {
+  position: relative;
+  margin-top: 1.5em;
+  font-family: 'Dancing Script', cursive;
+  font-size: 2rem;
+  color: var(--gold);
+  text-shadow: 0 0 15px rgba(201, 168, 76, 0.5);
+  opacity: 0;
+  white-space: pre;
+  pointer-events: none;
+  transition: opacity 0.7s;
+}
+
+.signature.visible {
+  opacity: 1;
+  animation: signature-draw 2.2s steps(24) forwards;
+}
+
+@keyframes signature-draw {
+  from { clip-path: inset(0 100% 0 0); }
+  to   { clip-path: inset(0 0 0 0); }
+}
+
+.countdown {
+  position: fixed;
+  left: 50%;
+  bottom: 3.5%;
+  transform: translateX(-50%);
+  font-family: 'Crimson Pro', serif;
+  font-size: 1.3rem;
+  color: var(--emerald-light);
+  background: rgba(10, 15, 10, 0.85);
+  border: 1px solid rgba(77, 175, 120, 0.3);
+  padding: 0.5em 1.4em;
+  border-radius: 2em;
+  z-index: 6;
+  box-shadow: 0 0 20px rgba(45, 122, 79, 0.15);
+  pointer-events: none;
+  letter-spacing: 0.03em;
+  min-width: 240px;
+  text-align: center;
+  opacity: 0;
+  transition: opacity 0.8s, transform 0.8s;
+  backdrop-filter: blur(8px);
+}
+
+.countdown.visible {
+  opacity: 1;
+}
+
+.floating-petal {
+  position: fixed;
+  will-change: transform, opacity;
+  width: 10px;
+  height: 10px;
+  border-radius: 50% 0 50% 0;
+}
+
+#footer-brand {
+  position: fixed;
+  bottom: 12px;
+  right: 16px;
+  z-index: 50;
+  font-family: 'Crimson Pro', serif;
+  font-size: 0.72rem;
+  color: rgba(201, 168, 76, 0.4);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  pointer-events: none;
+}
+
+#music-btn {
+  position: fixed;
+  bottom: 18px;
+  left: 18px;
+  z-index: 99;
+  background: rgba(10, 15, 10, 0.85);
+  border: 1px solid rgba(201, 168, 76, 0.4);
+  border-radius: 24px;
+  padding: 8px 16px;
+  font-size: 0.9em;
+  color: var(--gold);
+  cursor: pointer;
+  font-family: 'Crimson Pro', serif;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+#music-btn:hover {
+  border-color: var(--gold);
+  box-shadow: 0 0 10px rgba(201, 168, 76, 0.3);
+}
+
+@media (max-width: 700px) {
+  .tree-container {
+    width: 92vw !important;
+    height: 62vw !important;
+    top: 48%;
+    transform: translate(-50%, -50%);
+  }
+
+  .tree-container svg.move-and-scale {
+    transform: translateY(60px) scale(1.18);
+  }
+
+  .dedication-text {
+    top: 7vw;
+    left: 50%;
+    transform: translateX(-50%);
+    max-width: 92vw;
+    font-size: 1rem;
+    text-align: center;
+  }
+
+  .signature {
+    margin: 2em auto 0 auto;
+    font-size: 1.3rem;
+    text-align: center;
+  }
+
+  .countdown {
+    bottom: 10vw;
+    font-size: 0.9rem;
+    min-width: 60vw;
+    max-width: 92vw;
+  }
+}
+</style>
+</head>
+<body>
+
+<canvas id="fireworks-canvas"></canvas>
+<div id="floating-objects"></div>
+<div class="dedication-text" id="dedication-text">
+  <div class="signature" id="signature"></div>
+</div>
+<div class="countdown" id="countdown"></div>
+<div class="tree-container" id="tree-container"></div>
+
+<div id="footer-brand">C7Dev</div>
+
+<audio id="bg-music" preload="auto" loop>
+  <source src="https://raw.githubusercontent.com/Cristian14og/assets/main/leberch-romantic-583353.mp3" type="audio/mpeg">
+</audio>
+<button id="music-btn">🎵 Activar Música</button>
+
+<script>
+const TEXTO_POR_DEFECTO = `Para el amor de mi vida:\n\nDesde que llegaste, todo se siente más bonito.\n\nTu sonrisa, tu forma de ser y tu amor hacen que cada día valga la pena.\n\nGracias por estar conmigo y por hacerme tan feliz.`;
+const FIRMA_POR_DEFECTO = "Con mucho cariño 💚";
+const FECHA_INICIO_DEFECTO = "2024-08-03"; 
+const FECHA_EVENTO_DEFECTO = "2025-08-03";
+
+function getURLParam(name) {
+  const url = new URL(window.location.href);
+  return url.searchParams.get(name);
+}
+
+fetch('https://raw.githubusercontent.com/Rafael-codex/TreeLove.svg/refs/heads/main/treelove.svg')
+  .then(res => res.text())
+  .then(svgText => {
+    const container = document.getElementById('tree-container');
+    container.innerHTML = svgText;
+    const svg = container.querySelector('svg');
+    if (!svg) return;
+
+    const allPaths = Array.from(svg.querySelectorAll('path'));
+    allPaths.forEach(path => {
+      path.style.stroke = '#4daf78';
+      path.style.strokeWidth = '2';
+      path.style.fillOpacity = '0';
+      const length = path.getTotalLength();
+      path.style.strokeDasharray = length;
+      path.style.strokeDashoffset = length;
+      path.style.transition = 'none';
+    });
+
+    setTimeout(() => {
+      allPaths.forEach((path, i) => {
+        path.style.transition = `stroke-dashoffset 1.2s cubic-bezier(.77,0,.18,1) ${i * 0.08}s, fill-opacity 0.5s ${0.9 + i * 0.08}s`;
+        path.style.strokeDashoffset = 0;
+        setTimeout(() => {
+          path.style.fillOpacity = '1';
+          path.style.stroke = '';
+          path.style.strokeWidth = '';
+        }, 1200 + i * 80);
+      });
+
+      const totalDuration = 1200 + (allPaths.length - 1) * 80 + 500;
+      setTimeout(() => {
+        svg.classList.add('move-and-scale');
+        setTimeout(() => {
+          showDedicationText();
+          startFloatingPetals();
+          showCountdown();
+        }, 1200);
+      }, totalDuration);
+    }, 50);
+  });
+
+function showDedicationText() { 
+  let text = getURLParam('text');
+  if (!text) {
+    text = TEXTO_POR_DEFECTO;
+  } else {
+    text = decodeURIComponent(text).replace(/\\n/g, '\n');
+  }
+
+  const container = document.getElementById('dedication-text');
+  container.classList.add('typing');
+  let i = 0;
+
+  function type() {
+    if (i <= text.length) {
+      container.textContent = text.slice(0, i);
+      i++;
+      setTimeout(type, text[i - 2] === '\n' ? 350 : 45);
+    } else {
+      setTimeout(showSignature, 600);
+    }
+  }
+  type();
+}
+
+function showSignature() {
+  const dedication = document.getElementById('dedication-text');
+  let signature = dedication.querySelector('#signature');
+  if (!signature) {
+    signature = document.createElement('div');
+    signature.id = 'signature';
+    signature.className = 'signature';
+    dedication.appendChild(signature);
+  }
+  let firma = getURLParam('firma');
+  signature.textContent = firma ? decodeURIComponent(firma) : FIRMA_POR_DEFECTO;
+  signature.classList.add('visible');
+}
+
+function startFloatingPetals() {
+  const container = document.getElementById('floating-objects');
+  const petalColors = [
+    'rgba(201,168,76,0.7)',
+    'rgba(77,175,120,0.7)',
+    'rgba(240,208,112,0.6)',
+    'rgba(45,122,79,0.65)',
+  ];
+  let count = 0;
+
+  function spawn() {
+    const el = document.createElement('div');
+    el.className = 'floating-petal';
+    el.style.left = `${Math.random() * 92 + 2}%`;
+    el.style.top = `${100 + Math.random() * 10}%`;
+    el.style.background = petalColors[Math.floor(Math.random() * petalColors.length)];
+    el.style.width = `${6 + Math.random() * 8}px`;
+    el.style.height = el.style.width;
+    el.style.borderRadius = Math.random() > 0.5 ? '50% 0 50% 0' : '0 50% 0 50%';
+    el.style.boxShadow = `0 0 6px ${petalColors[0]}`;
+    container.appendChild(el);
+
+    const dur = 7000 + Math.random() * 5000;
+    const drift = (Math.random() - 0.5) * 80;
+
+    setTimeout(() => {
+      el.style.transition = `transform ${dur}ms linear, opacity 1.5s`;
+      el.style.transform = `translate(${drift}px, -115vh) scale(${0.6 + Math.random() * 0.8}) rotate(${Math.random() * 540}deg)`;
+      el.style.opacity = '0';
+    }, 30);
+
+    setTimeout(() => { if (el.parentNode) el.parentNode.removeChild(el); }, dur + 2000);
+    if (count++ < 30) setTimeout(spawn, 300 + Math.random() * 400);
+    else setTimeout(spawn, 1000 + Math.random() * 1500);
+  }
+  spawn();
+}
+
+function showCountdown() {
+  const container = document.getElementById('countdown');
+  let startParam = getURLParam('start') || FECHA_INICIO_DEFECTO;
+  let eventParam = getURLParam('event') || FECHA_EVENTO_DEFECTO;
+  let startDate = new Date(startParam + 'T00:00:00'); 
+  let eventDate = new Date(eventParam + 'T00:00:00');
+
+  function update() {
+    const now = new Date();
+    let diff = now - startDate;
+    let days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    let eventDiff = eventDate - now;
+    let eventDays = Math.max(0, Math.floor(eventDiff / (1000 * 60 * 60 * 24)));
+    let eventHours = Math.max(0, Math.floor((eventDiff / (1000 * 60 * 60)) % 24));
+    let eventMinutes = Math.max(0, Math.floor((eventDiff / (1000 * 60)) % 60));
+    let eventSeconds = Math.max(0, Math.floor((eventDiff / 1000) % 60));
+
+    container.innerHTML =
+      `🌿 Juntos: <b>${days}</b> días &nbsp;·&nbsp; ` +
+      `🎉 Próximo aniversario: <b>${eventDays}d ${eventHours}h ${eventMinutes}m ${eventSeconds}s</b>`;
+    container.classList.add('visible');
+  }
+  update();
+  setInterval(update, 1000);
+}
+
+// ── Control del Audio ──
+const audio = document.getElementById('bg-music');
+const musicBtn = document.getElementById('music-btn');
+
+function toggleAudio() {
+  if (audio.paused) {
+    audio.play().then(() => {
+      musicBtn.textContent = '🔊 Música';
+    }).catch(err => {
+      console.log('Error reproduciendo audio:', err);
+    });
+  } else {
+    audio.pause();
+    musicBtn.textContent = '🔈 Música';
+  }
+}
+
+document.addEventListener('click', function startAudioOnFirstClick() {
+  if (audio.paused) {
+    audio.play().then(() => {
+      musicBtn.textContent = '🔊 Música';
+    }).catch(() => {});
+  }
+}, { once: true });
+
+musicBtn.addEventListener('click', function(e) {
+  e.stopPropagation();
+  toggleAudio();
+});
+</script>
+</body>
+</html>
